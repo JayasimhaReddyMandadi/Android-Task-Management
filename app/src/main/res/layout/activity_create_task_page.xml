@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    tools:context=".TaskPageCreate"
+    android:background="@drawable/main_background">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/transparent"
+        android:elevation="0dp"
+        app:title="Create Task"
+        app:navigationIcon="@drawable/ic_back"
+        app:navigationIconTint="@color/white"
+        app:titleTextColor="@color/white"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/titleInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:hint="Task Title"
+                app:hintTextColor="@color/white"
+                app:boxStrokeColor="@color/white"
+                android:textColorHint="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/create_task_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:inputType="text"
+                    android:textColor="@color/white"
+
+                    />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/descriptionInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:hint="Description"
+                app:hintTextColor="@color/white"
+                app:boxStrokeColor="@color/white"
+                android:textColorHint="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/create_task_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top|start"
+                    android:textColor="@color/white">
+
+
+                </com.google.android.material.textfield.TextInputEditText>
+                </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/dueDateInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:hint="Due Date"
+                app:hintTextColor="@color/white"
+                app:boxStrokeColor="@color/white"
+                android:textColorHint="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/create_task_due_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:focusable="false"
+                    android:drawableEnd="@drawable/ic_calendar"
+                    android:textColor="@color/white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Priority"
+                android:textColor="@color/white"
+                android:layout_marginBottom="8dp"/>
+
+            <Spinner
+                android:id="@+id/create_task_priority"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/spinner_background"
+                android:contentDescription="Select task priority"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status"
+                android:textColor="@color/white"
+                android:layout_marginBottom="8dp"/>
+
+            <Spinner
+                android:id="@+id/create_task_status"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/spinner_background"
+                android:contentDescription="Select task status"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/create_task_button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Create Task"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
+
+                <Button
+                    android:id="@+id/cancel_button"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Cancel"
+                    android:layout_marginStart="8dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

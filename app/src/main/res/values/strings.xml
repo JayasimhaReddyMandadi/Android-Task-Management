@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Task Management System</string>
+    <string name="select_task_status">Select task status</string>
+    <string name="select_task_priority">Select task priority</string>
+    <string name="enter_task_name">Enter Task Name</string>
+    <string name="enter_task_details">Enter Task Details</string>
+    <string name="task_status">Task Status</string>
+    <string name="task_priority">Task Priority</string>
+    <string name="choose_due_date">Choose Due Date</string>
+    <string name="save_task">Save Task</string>
+</resources>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_background"
+    tools:context=".RegistrationPage">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Signup"
+            android:textColor="@color/white"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginTop="25dp"/>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="324dp"
+            android:layout_height="250dp"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/img_3"/>
+
+        <EditText
+            android:id="@+id/usernameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/background_button"
+            android:backgroundTint="#f5f0e1"
+            android:paddingHorizontal="15dp"
+            android:hint="Username"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColorHint="#80000000"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/background_button"
+            android:backgroundTint="#f5f0e1"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
+            android:maxLines="1"
+            android:paddingHorizontal="15dp"
+            android:textColorHint="#80000000"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/background_button"
+            android:backgroundTint="#f5f0e1"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:paddingHorizontal="15dp"
+            android:textColorHint="#80000000"
+            android:textSize="18sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button3"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/background_button"
+
+            android:text="Signup"
+            android:textColor="@color/white"
+            android:textSize="25dp"
+            android:textStyle="bold"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/cancel_button"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="15dp"
+            android:background="@drawable/background_button"
+            android:text="Cancel"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+</RelativeLayout>
