@@ -4,9 +4,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,64 +18,137 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class LoginPage extends AppCompatActivity {
-
-   private EditText usernameInput, passwordInput;
+    private static final String TAG = "LoginPage";
+    private EditText usernameInput, passwordInput;
+    private ProgressBar progressBar;
     private String username, password;
-    private final String LOGIN_URL = "http://172.16.20.92:8000/api/login/"; // Replace with your backend URL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login_page); // Make sure you have this layout for login
+        setContentView(R.layout.activity_login_page);
 
+        initializeViews();
+        setupClickListeners();
+
+        // Check if user is already logged in
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, MODE_PRIVATE);
+        String token = prefs.getString(Constants.ACCESS_TOKEN_KEY, "");
+
+        if (!token.isEmpty()) {
+            // Verify token validity
+            verifyTokenAndRedirect(token);
+        }
+    }
+
+    private void initializeViews() {
         usernameInput = findViewById(R.id.username_input);
         passwordInput = findViewById(R.id.password_input);
+        progressBar = findViewById(R.id.progressBar);
+    }
 
-        // Set the login button listener
+    private void setupClickListeners() {
         findViewById(R.id.login_btn).setOnClickListener(v -> login());
-
-        // Set the register button listener to navigate to the registration page
         findViewById(R.id.register_redirect_btn).setOnClickListener(v -> navigateToRegister());
     }
 
-    // Login method
+    private void setLoadingVisible(boolean visible) {
+        if (progressBar != null) {
+            progressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+        if (usernameInput != null) usernameInput.setEnabled(!visible);
+        if (passwordInput != null) passwordInput.setEnabled(!visible);
+        View loginButton = findViewById(R.id.login_btn);
+        if (loginButton != null) loginButton.setEnabled(!visible);
+        View registerButton = findViewById(R.id.register_redirect_btn);
+        if (registerButton != null) registerButton.setEnabled(!visible);
+    }
+
+    private void verifyTokenAndRedirect(String token) {
+        setLoadingVisible(true);
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                URL url = new URL(Constants.BASE_URL + Constants.ENDPOINT_PROFILE);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty(Constants.AUTHORIZATION_HEADER,
+                        Constants.BEARER_PREFIX + token);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+
+                int responseCode = connection.getResponseCode();
+                Log.d(TAG, "Token verification response code: " + responseCode);
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Log.d(TAG, "Token is valid, redirecting to dashboard");
+                    runOnUiThread(this::navigateToDashBoard);
+                } else {
+                    Log.d(TAG, "Token is invalid, clearing token");
+                    clearToken();
+                    runOnUiThread(() -> setLoadingVisible(false));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error verifying token", e);
+                clearToken();
+                runOnUiThread(() -> setLoadingVisible(false));
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        }).start();
+    }
+
+    private void clearToken() {
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, MODE_PRIVATE);
+        prefs.edit()
+                .remove(Constants.ACCESS_TOKEN_KEY)
+                .remove(Constants.REFRESH_TOKEN_KEY)
+                .apply();
+    }
+
     public void login() {
         username = usernameInput.getText().toString().trim();
         password = passwordInput.getText().toString().trim();
 
-        // Validate inputs
         if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+            showError("Please enter both username and password");
             return;
         }
 
-        // Perform login on a background thread
+        setLoadingVisible(true);
+
         new Thread(() -> {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
             try {
-                // Prepare the connection to the server
-                URL url = new URL(LOGIN_URL);
+                URL url = new URL(Constants.BASE_URL + Constants.ENDPOINT_LOGIN);
+                Log.d(TAG, "Login URL: " + url.toString());
+
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json"); // Content type is JSON
+                connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
 
-                // Prepare the JSON data for the POST request (changed "email" to "username")
                 JSONObject loginData = new JSONObject();
-                loginData.put("username", username);  // Use "username" here
+                loginData.put("username", username);
                 loginData.put("password", password);
 
-                // Send the JSON data
+                Log.d(TAG, "Attempting login for user: " + username);
+
                 try (OutputStream os = connection.getOutputStream()) {
-                    os.write(loginData.toString().getBytes());
-                    os.flush();
+                    byte[] input = loginData.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
                 }
 
-                // Get the response from the server
                 int responseCode = connection.getResponseCode();
+                Log.d(TAG, "Login response code: " + responseCode);
+
                 reader = new BufferedReader(new InputStreamReader(
-                        responseCode == 200 ? connection.getInputStream() : connection.getErrorStream()
+                        responseCode == HttpURLConnection.HTTP_OK ?
+                                connection.getInputStream() :
+                                connection.getErrorStream()
                 ));
 
                 StringBuilder response = new StringBuilder();
@@ -81,78 +157,99 @@ public class LoginPage extends AppCompatActivity {
                     response.append(line);
                 }
 
-                // Log the raw response from the server
-                Log.d("LoginResponse", "Response: " + response.toString());
+                Log.d(TAG, "Login response: " + response.toString());
 
-                // Check for successful login (200 OK)
-                runOnUiThread(() -> {
-                    try {
-                        JSONObject jsonResponse = new JSONObject(response.toString());
+                final JSONObject jsonResponse = new JSONObject(response.toString());
 
-                        // Check if the response contains access and refresh tokens
-                        if (jsonResponse.has("access") && jsonResponse.has("refresh")) {
-                            String accessToken = jsonResponse.getString("access");
-                            String refreshToken = jsonResponse.getString("refresh");
-
-                            // Store the tokens securely (e.g., in SharedPreferences)
-                            storeTokens(accessToken, refreshToken);
-
-                            // Show login successful message
-                            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-
-                            // Navigate to the DashBoard activity after successful login
-                            navigateToDashBoard();
-                        } else {
-                            // Handle the case where the tokens are missing
-                            Toast.makeText(this, "Unexpected server response", Toast.LENGTH_SHORT).show();
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    runOnUiThread(() -> handleLoginSuccess(jsonResponse));
+                } else {
+                    String errorMessage = jsonResponse.optString("detail", "Login failed");
+                    runOnUiThread(() -> {
+                        showError(errorMessage);
+                        setLoadingVisible(false);
+                    });
+                }
 
             } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "An error occurred: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                Log.e(TAG, "Login error", e);
+                runOnUiThread(() -> {
+                    showError("Login failed: " + e.getMessage());
+                    setLoadingVisible(false);
+                });
             } finally {
-                // Close resources safely
                 try {
-                    if (reader != null) {
-                        reader.close();
-                    }
+                    if (reader != null) reader.close();
+                    if (connection != null) connection.disconnect();
                 } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (connection != null) {
-                    connection.disconnect();
+                    Log.e(TAG, "Error closing resources", e);
                 }
             }
         }).start();
     }
 
-    // Method to store the tokens securely (SharedPreferences in this case)
-    private void storeTokens(String accessToken, String refreshToken) {
-        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("access_token", accessToken);
-        editor.putString("refresh_token", refreshToken);
-        editor.apply();
+    private void handleLoginSuccess(JSONObject response) {
+        try {
+            if (!response.has("access")) {
+                showError("Invalid server response: missing access token");
+                setLoadingVisible(false);
+                return;
+            }
+
+            String accessToken = response.getString("access");
+            if (accessToken.isEmpty()) {
+                showError("Invalid access token received");
+                setLoadingVisible(false);
+                return;
+            }
+
+            SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString(Constants.ACCESS_TOKEN_KEY, accessToken);
+            editor.apply();
+
+            String savedToken = prefs.getString(Constants.ACCESS_TOKEN_KEY, "");
+            Log.d(TAG, "Token saved successfully: " + (savedToken.equals(accessToken)));
+
+            if (!savedToken.equals(accessToken)) {
+                showError("Failed to save login token");
+                setLoadingVisible(false);
+                return;
+            }
+
+            showToast("Login successful");
+            navigateToDashBoard();
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing login response", e);
+            showError("Login failed: Invalid response format");
+            setLoadingVisible(false);
+        }
     }
 
-    // Method to navigate to the home page after successful login
     private void navigateToDashBoard() {
-        // Example navigation, you can change it based on your app flow
         Intent intent = new Intent(LoginPage.this, DashboardPage.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
 
-    // Method to navigate to the registration page
     private void navigateToRegister() {
         Intent intent = new Intent(LoginPage.this, RegistrationPage.class);
         startActivity(intent);
+    }
+
+    private void showError(String message) {
+        runOnUiThread(() -> showToast(message));
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        passwordInput.setText("");
+        setLoadingVisible(false);
     }
 }

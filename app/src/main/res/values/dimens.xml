@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="task_item_spacing">8dp</dimen>
+    <dimen name="profile_image_size">120dp</dimen>
+    <dimen name="standard_margin">16dp</dimen>
 </resources>

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTaskActionListener {
+    private static final String TAG = "DashboardPage";
     private TextView totalTasksTextView;
     private TextView completedTasksTextView;
     private TextView pendingTasksTextView;
@@ -41,16 +43,23 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
     private TaskAdapter taskAdapter;
     private Button createTaskButton;
     private Button applyFiltersButton;
+    private ImageButton profileButton;
     private List<Task> allTasks;
 
     private static final String DATE_FORMAT_API = "yyyy-MM-dd";
     private SimpleDateFormat apiDateFormat;
-    private static final String BASE_URL = "http://172.16.20.92:8000";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard_page);
+
+        String token = getAccessToken();
+        if (token.isEmpty()) {
+            Log.e(TAG, "No token found, redirecting to login");
+            redirectToLogin();
+            return;
+        }
 
         apiDateFormat = new SimpleDateFormat(DATE_FORMAT_API, Locale.getDefault());
         initializeViews();
@@ -67,6 +76,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
         tasksRecyclerView = findViewById(R.id.tasks_recycler_view);
         createTaskButton = findViewById(R.id.btn_create_task);
         applyFiltersButton = findViewById(R.id.btn_apply_filters);
+        profileButton = findViewById(R.id.profile_button);
     }
 
     private void setupRecyclerView() {
@@ -88,6 +98,12 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
     private void setupButtons() {
         createTaskButton.setOnClickListener(v -> navigateToCreateTask());
         applyFiltersButton.setOnClickListener(v -> showFiltersDialog());
+        profileButton.setOnClickListener(v -> navigateToProfile());
+    }
+
+    private void navigateToProfile() {
+        Intent intent = new Intent(DashboardPage.this, ProfileActivity.class);
+        startActivity(intent);
     }
 
     private void navigateToCreateTask() {
@@ -100,20 +116,36 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
     }
 
     private String getAccessToken() {
-        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
-        return sharedPreferences.getString("access_token", null);
+        SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        String token = prefs.getString(Constants.ACCESS_TOKEN_KEY, "");
+        Log.d(TAG, "Token from SharedPreferences: " + token);
+        return token;
     }
 
     private void fetchTasksFromServer() {
+        String token = getAccessToken();
+        if (token.isEmpty()) {
+            Log.e(TAG, "No token available for fetching tasks");
+            redirectToLogin();
+            return;
+        }
+
         new Thread(() -> {
             HttpURLConnection connection = null;
             try {
-                URL url = new URL(BASE_URL + "/api/tasks/list/");
+                URL url = new URL(Constants.BASE_URL + Constants.ENDPOINT_TASKS);
+                Log.d(TAG, "Fetching tasks from URL: " + url.toString());
+
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Bearer " + getAccessToken());
+
+                String authHeader = Constants.BEARER_PREFIX + token;
+                Log.d(TAG, "Authorization header: " + authHeader);
+                connection.setRequestProperty(Constants.AUTHORIZATION_HEADER, authHeader);
 
                 int responseCode = connection.getResponseCode();
+                Log.d(TAG, "Tasks fetch response code: " + responseCode);
+
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(connection.getInputStream()));
@@ -124,6 +156,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
                         response.append(line);
                     }
 
+                    Log.d(TAG, "Tasks response: " + response.toString());
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     JSONArray tasksArray = jsonResponse.getJSONArray("results");
                     List<Task> tasks = new ArrayList<>();
@@ -138,14 +171,19 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
                         allTasks = tasks;
                         updateUIWithTasks(tasks);
                     });
+                } else if (responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    Log.e(TAG, "Unauthorized access, token might be invalid");
+                    runOnUiThread(this::redirectToLogin);
                 } else {
+                    String errorMessage = getErrorMessage(connection);
+                    Log.e(TAG, "Failed to fetch tasks: " + errorMessage);
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Failed to fetch tasks: " + responseCode,
+                            Toast.makeText(this, "Failed to fetch tasks: " + errorMessage,
                                     Toast.LENGTH_SHORT).show()
                     );
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error fetching tasks", e);
                 runOnUiThread(() ->
                         Toast.makeText(this, "Error: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show()
@@ -168,7 +206,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
             try {
                 dueDate = apiDateFormat.parse(taskObject.getString("deadline"));
             } catch (ParseException e) {
-                Log.e("DateParse", "Error parsing deadline", e);
+                Log.e(TAG, "Error parsing deadline", e);
             }
         }
 
@@ -176,7 +214,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
     }
 
     private void updateUIWithTasks(List<Task> tasks) {
-        Log.d("DashboardPage", "Updating UI with tasks: " + tasks.size());
+        Log.d(TAG, "Updating UI with tasks: " + tasks.size());
 
         int totalTasks = tasks.size();
         int completedTasks = 0;
@@ -184,7 +222,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
         int onHoldTasks = 0;
 
         for (Task task : tasks) {
-            Log.d("DashboardPage", "Task: " + task.getTitle() + ", Status: " + task.getStatus());
+            Log.d(TAG, "Task: " + task.getTitle() + ", Status: " + task.getStatus());
 
             switch (task.getStatus().toLowerCase()) {
                 case "completed":
@@ -198,7 +236,7 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
                     pendingTasks++;
                     break;
                 default:
-                    Log.w("DashboardPage", "Unknown status: " + task.getStatus());
+                    Log.w(TAG, "Unknown status: " + task.getStatus());
                     pendingTasks++;
                     break;
             }
@@ -212,8 +250,30 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
         taskAdapter.setTasks(tasks);
         tasksRecyclerView.post(() -> {
             taskAdapter.notifyDataSetChanged();
-            Log.d("DashboardPage", "RecyclerView data updated");
+            Log.d(TAG, "RecyclerView data updated");
         });
+    }
+
+    private String getErrorMessage(HttpURLConnection connection) {
+        try {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getErrorStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        } catch (Exception e) {
+            return "Unknown error";
+        }
+    }
+
+    private void redirectToLogin() {
+        Intent intent = new Intent(this, LoginPage.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -221,10 +281,11 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
         new Thread(() -> {
             HttpURLConnection connection = null;
             try {
-                URL url = new URL(BASE_URL + "/api/tasks/delete/" + task.getId() + "/");
+                URL url = new URL(Constants.BASE_URL + Constants.ENDPOINT_DELETE_TASK + task.getId() + "/");
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("DELETE");
-                connection.setRequestProperty("Authorization", "Bearer " + getAccessToken());
+                connection.setRequestProperty(Constants.AUTHORIZATION_HEADER,
+                        Constants.BEARER_PREFIX + getAccessToken());
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_NO_CONTENT ||
@@ -236,13 +297,14 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
                                 Toast.LENGTH_SHORT).show();
                     });
                 } else {
+                    String errorMessage = getErrorMessage(connection);
                     runOnUiThread(() ->
-                            Toast.makeText(this, "Failed to delete task: " + responseCode,
+                            Toast.makeText(this, "Failed to delete task: " + errorMessage,
                                     Toast.LENGTH_SHORT).show()
                     );
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "Error deleting task", e);
                 runOnUiThread(() ->
                         Toast.makeText(this, "Error: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show()
@@ -270,7 +332,13 @@ public class DashboardPage extends AppCompatActivity implements TaskAdapter.OnTa
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("DashboardPage", "onResume called, fetching tasks");
-        new Handler().postDelayed(this::fetchTasksFromServer, 1000);
+        String token = getAccessToken();
+        if (token.isEmpty()) {
+            Log.e(TAG, "No token found in onResume, redirecting to login");
+            redirectToLogin();
+            return;
+        }
+        Log.d(TAG, "onResume called, fetching tasks");
+        new Handler().postDelayed(this::fetchTasksFromServer, 500);
     }
 }
