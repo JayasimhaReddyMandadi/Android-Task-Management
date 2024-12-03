@@ -15,9 +15,7 @@ import android.widget.Toast;
 import android.widget.AutoCompleteTextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.annotation.NonNull;
 
-import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 

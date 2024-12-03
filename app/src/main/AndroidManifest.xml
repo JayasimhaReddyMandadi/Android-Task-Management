@@ -16,8 +16,21 @@
         android:theme="@style/Theme.MaterialComponents.Light.NoActionBar"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity android:name=".UserTaskActivity"
+            android:exported="false"/>
+        <activity android:name=".UsersList"
+            android:exported="false"/>
         <activity
-            android:name=".AdminPageLogin"
+            android:name=".AdminTaskList"
+            android:exported="false" />
+        <activity
+            android:name=".AdminDashBoardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminLoginActivity"
             android:exported="false" />
         <activity
             android:name=".ProfileActivity"

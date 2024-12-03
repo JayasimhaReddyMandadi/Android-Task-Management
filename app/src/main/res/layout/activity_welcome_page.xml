@@ -13,7 +13,6 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <!-- Title Text: Centered -->
         <TextView
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
@@ -24,14 +23,12 @@
             android:layout_marginTop="40dp"
             android:textColor="@color/black" />
 
-        <!-- Centered Image -->
         <ImageView
             android:id="@+id/image"
             android:layout_width="332dp"
             android:layout_height="319dp"
             android:layout_marginTop="30dp"
             android:background="@drawable/img_1" />
-
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/login_button"
@@ -49,8 +46,6 @@
             android:id="@+id/signup_button"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_below="@id/login_button"
-
             android:layout_marginTop="20dp"
             android:background="@drawable/background_button"
             android:padding="10dp"

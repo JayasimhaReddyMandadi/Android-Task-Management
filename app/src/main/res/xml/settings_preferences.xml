@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="Notifications"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            app:key="notifications"
+            app:title="Enable Notifications"
+            app:summary="Receive notifications for new tasks and updates"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="notification_sound"
+            app:title="Notification Sound"
+            app:summary="Play sound for notifications"
+            app:defaultValue="true"
+            app:dependency="notifications"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="notification_vibrate"
+            app:title="Vibrate"
+            app:summary="Vibrate for notifications"
+            app:defaultValue="true"
+            app:dependency="notifications"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Email Settings"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference
+            app:key="email_frequency"
+            app:title="Email Report Frequency"
+            app:summary="Number of days between email reports (1-30)"
+            app:defaultValue="7"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="email_updates"
+            app:title="Email Updates"
+            app:summary="Receive email updates for important changes"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Data &amp; Storage"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            app:key="clear_cache"
+            app:title="Clear Cache"
+            app:summary="Clear temporary data and cache"
+            app:iconSpaceReserved="false"/>
+
+        <SwitchPreferenceCompat
+            app:key="auto_sync"
+            app:title="Auto Sync"
+            app:summary="Automatically sync data in background"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

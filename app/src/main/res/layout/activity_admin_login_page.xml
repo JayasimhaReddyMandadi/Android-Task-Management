@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bbackground_2">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Admin Login"
+            android:textColor="@color/black"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="30dp"/>
+
+        <!-- Admin Image -->
+        <ImageView
+            android:layout_width="208dp"
+            android:layout_height="205dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="30dp"
+
+            android:contentDescription="Admin Icon"/>
+
+        <!-- Username Input -->
+        <EditText
+            android:id="@+id/admin_username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_corner"
+            android:hint="Username"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:inputType="text"
+            android:padding="15dp"
+            android:textSize="20sp"
+            android:layout_marginBottom="15dp"/>
+
+        <!-- Password Input -->
+        <EditText
+            android:id="@+id/admin_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:textColorHint="@color/white"
+            android:inputType="textPassword"
+            android:background="@drawable/rounded_corner"
+            android:padding="15dp"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Login Button -->
+        <Button
+            android:id="@+id/admin_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Login as Admin"
+            android:background="@drawable/background_botton_2"
+            android:textColor="@color/white"
+            android:textSize="18sp"/>
+
+        <!-- Go to User Login Text -->
+        <TextView
+            android:id="@+id/goto_user_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Go to User Login"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/loading_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</RelativeLayout>
